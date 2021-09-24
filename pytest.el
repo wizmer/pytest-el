@@ -120,7 +120,7 @@ Optional argument FLAGS py.test command line flags."
   (pytest-start-command (pytest-get-command tests flags)))
 
 (defun pytest-get-command (tests flags)
-  (let* ((pytest (pytest-find-test-runner))
+  (let* ((pytest (pytest-find-local-test-runner))
          (where (if tests
                     (let ((testpath (if (listp tests) (car tests) tests)))
                       (pytest-find-project-root (file-name-directory testpath)))
@@ -242,6 +242,14 @@ Optional argument FLAGS py.test command line flags."
 
 
 ;;; Utility functions
+(defun pytest-find-local-test-runner ()
+  (let ((pytest "python -u -c \"import pytest; pytest.main()\""))
+    (if python-shell-virtualenv-path
+        (if (spacemacs/system-is-mswindows)
+            (format "%s/Scripts/%s" python-shell-virtualenv-path pytest)
+          (format "%s/bin/%s" python-shell-virtualenv-path pytest))
+      pytest)))
+
 (defun pytest-find-test-runner ()
   (let ((result
      (reduce '(lambda (x y) (or x y))
